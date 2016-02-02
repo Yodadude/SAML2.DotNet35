@@ -1,4 +1,4 @@
-﻿using SAML2.Config;
+﻿using SAML2.DotNet35.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace SelfHostOwinSPExample.Metadata_MtUAT
                 new ServiceProviderEndpoint(EndpointType.Metadata, "/identity/metadata")
             });
             myconfig.IdentityProviders.AddByMetadata("..\\..\\Metadata-Test\\uat.xml");
-            SAML2.Logging.LoggerProvider.Configuration = myconfig;
+            SAML2.DotNet35.Logging.LoggerProvider.Configuration = myconfig;
             return myconfig;
         }
     }

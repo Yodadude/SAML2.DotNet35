@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Owin;
-using SAML2.Config;
+using SAML2.DotNet35.Config;
 using System.IO;
 
 namespace SelfHostOwinSPExample
