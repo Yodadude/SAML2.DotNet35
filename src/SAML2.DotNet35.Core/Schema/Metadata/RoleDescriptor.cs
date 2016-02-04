@@ -3,6 +3,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using SAML2.DotNet35.Schema.XmlDSig;
 using SAML2.DotNet35.Utils;
+using SAML2.DotNet35.Schema.Metadata.Adfs;
 
 namespace SAML2.DotNet35.Schema.Metadata
 {
@@ -16,7 +17,9 @@ namespace SAML2.DotNet35.Schema.Metadata
     [XmlInclude(typeof(AuthnAuthorityDescriptor))]
     [XmlInclude(typeof(SsoDescriptor))]
     [XmlInclude(typeof(SpSsoDescriptor))]
-    [XmlInclude(typeof(IdpSsoDescriptor))]    
+    [XmlInclude(typeof(IdpSsoDescriptor))]
+    [XmlInclude(typeof(AdfsSecurityTokenServiceTypeRoleDescriptor))]
+    [XmlInclude(typeof(AdfsApplicationServiceTypeRoleDescriptor))]
     [Serializable]
     [XmlType(Namespace = Saml20Constants.Metadata)]
     [XmlRoot(ElementName, Namespace = Saml20Constants.Metadata, IsNullable = false)]

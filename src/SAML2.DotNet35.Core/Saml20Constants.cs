@@ -26,6 +26,11 @@ namespace SAML2.DotNet35
         public const string Metadata = "urn:oasis:names:tc:SAML:2.0:metadata";
 
         /// <summary>
+        /// The XML namespace of the Active Directory Federation Services Schema
+        /// </summary>
+        public const string Adfs = "http://docs.oasis-open.org/wsfed/federation/200706";
+
+        /// <summary>
         /// The XML namespace of <c>XmlDSig</c>
         /// </summary>
         public const string Xmldsig = "http://www.w3.org/2000/09/xmldsig#";

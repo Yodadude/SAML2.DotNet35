@@ -56,8 +56,10 @@ namespace SAML2.DotNet35.Tests
             {
                 Saml20MetadataDocument metadata;
                 // Arrange
-                using (var ms = new MemoryStream()) {
-                    using (var reader = File.OpenText(@"Protocol\MetadataDocs\metadata-ADLER.xml")) {
+                using (var ms = new MemoryStream())
+                {
+                    using (var reader = File.OpenText(@"Protocol\MetadataDocs\metadata-ADLER.xml"))
+                    {
                         reader.BaseStream.CopyTo(ms);
                         reader.Close();
                     }
@@ -132,12 +134,32 @@ namespace SAML2.DotNet35.Tests
 
                 byte[] result = null;
                 using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                using (var memoryStream = new MemoryStream()) {
+                using (var memoryStream = new MemoryStream())
+                {
                     stream.CopyTo(memoryStream);
                     result = memoryStream.ToArray();
                 }
                 return result;
             }
+        }
+
+        [TestFixture]
+        public class LoadingMetadata
+        {
+            [Test]
+            public void LoadMetadataFromUrl()
+            {
+                var doc = new XmlDocument { PreserveWhitespace = true };
+                doc.Load(@"https://sts.newcrest.com.au/federationmetadata/2007-06/federationmetadata.xml");
+
+                // Act
+                var metadata = new Saml20MetadataDocument(doc);
+
+                // Assert
+                Assert.AreEqual(2, metadata.IDPSLOEndpoints.Count);
+                Assert.AreEqual(2, metadata.SSOEndpoints.Count);
+            }
+
         }
     }
 }
