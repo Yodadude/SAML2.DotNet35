@@ -150,6 +150,8 @@
     <Compile Include="Schema\Core\SubjectConfirmationData.cs" />
     <Compile Include="Schema\Core\SubjectLocality.cs" />
     <Compile Include="Schema\Metadata\AdditionalMetadataLocation.cs" />
+    <Compile Include="Schema\Metadata\Adfs\AdfsApplicationServiceTypeRoleDescriptor.cs" />
+    <Compile Include="Schema\Metadata\Adfs\AdfsSecurityTokenServiceTypeRoleDescriptor.cs" />
     <Compile Include="Schema\Metadata\AffiliationDescriptor.cs" />
     <Compile Include="Schema\Metadata\AttributeAuthorityDescriptor.cs" />
     <Compile Include="Schema\Metadata\AttributeConsumingService.cs" />
