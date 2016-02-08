@@ -20,6 +20,12 @@ namespace SAML2.DotNet35.Config
         public List<System.Uri> AllowedAudienceUris { get; set; }
 
         /// <summary>
+        /// Gets or sets the if allow any AuthContextDelcRef if when you have non complaint saml
+        /// </summary>
+        /// <value>if allow any AuthContextDelcRef if when you have non complaint saml</value>
+        public bool AllowAnyAuthContextDeclRef { get; set; }
+
+        /// <summary>
         /// Gets or sets the assertion profile.
         /// </summary>
         /// <value>The assertion profile configuration.</value>
@@ -59,6 +65,5 @@ namespace SAML2.DotNet35.Config
             AllowedAudienceUris = new List<System.Uri>();
             Metadata = new Metadata();
         }
-
     }
 }

@@ -20,7 +20,7 @@ namespace SAML2.DotNet35.Specification
         public bool IsSatisfiedBy(X509Certificate2 certificate)
         {
             var useMachineContext = false;
-            var chainPolicy = new X509ChainPolicy { RevocationMode = X509RevocationMode.Online };
+            var chainPolicy = new X509ChainPolicy { RevocationMode = X509RevocationMode.NoCheck };
             var defaultCertificateValidator = X509CertificateValidator.CreateChainTrustValidator(useMachineContext, chainPolicy);
 
             try

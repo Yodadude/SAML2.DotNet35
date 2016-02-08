@@ -89,7 +89,7 @@ namespace SAML2.DotNet35.Utils
         public static bool CheckSignature(XmlDocument doc, KeyInfo keyinfo)
         {
             CheckDocument(doc);
-            var signedXml = RetrieveSignature(doc);            
+            var signedXml = RetrieveSignature(doc);
 
             AsymmetricAlgorithm alg = null;
             X509Certificate2 cert = null;
@@ -101,19 +101,19 @@ namespace SAML2.DotNet35.Utils
                     alg = key.Key;
                     break;
                 }
-                
+
                 if (clause is KeyInfoX509Data)
                 {
                     var x509Data = (KeyInfoX509Data)clause;
                     var count = x509Data.Certificates.Count;
-                    cert = (X509Certificate2)x509Data.Certificates[count - 1];                    
-                } 
+                    cert = (X509Certificate2)x509Data.Certificates[count - 1];
+                }
                 else if (clause is DSAKeyValue)
                 {
                     var key = (DSAKeyValue)clause;
                     alg = key.Key;
                     break;
-                }                
+                }
             }
 
             if (alg == null && cert == null)
@@ -134,19 +134,19 @@ namespace SAML2.DotNet35.Utils
             if (keyInfoClause is RSAKeyValue)
             {
                 var key = (RSAKeyValue)keyInfoClause;
-                return key.Key;                
+                return key.Key;
             }
-            
+
             if (keyInfoClause is KeyInfoX509Data)
             {
                 var cert = GetCertificateFromKeyInfo((KeyInfoX509Data)keyInfoClause);
                 return cert != null ? cert.PublicKey.Key : null;
             }
-            
+
             if (keyInfoClause is DSAKeyValue)
             {
                 var key = (DSAKeyValue)keyInfoClause;
-                return key.Key;                
+                return key.Key;
             }
 
             return null;
@@ -213,7 +213,7 @@ namespace SAML2.DotNet35.Utils
             {
                 return null;
             }
-            
+
             var cert = (X509Certificate2)keyInfo.Certificates[count - 1];
 
             return cert;
@@ -278,7 +278,14 @@ namespace SAML2.DotNet35.Utils
 
             // Include the public key of the certificate in the assertion.
             signedXml.KeyInfo = new KeyInfo();
-            signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.WholeChain));
+            //if (AllowSelfSignCertificates)
+            //{
+            signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.None));
+            //}
+            //else
+            //{
+            //    signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.WholeChain));
+            //}
 
             signedXml.ComputeSignature();
 
@@ -409,16 +416,38 @@ namespace SAML2.DotNet35.Utils
                 var addAlgorithmMethod = typeof(CryptoConfig).GetMethod("AddAlgorithm", BindingFlags.Public | BindingFlags.Static);
                 if (addAlgorithmMethod == null)
                 {
-                    throw new InvalidOperationException("This version of .Net does not support CryptoConfig.AddAlgorithm. Enabling sha256 not psosible.");
+                    var ob1 = CryptoConfig.CreateFromName("SHA256");
+                    AddAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", typeof(RSAPKCS1SHA256SignatureDescription));
+                    //throw new InvalidOperationException("This version of .Net does not support CryptoConfig.AddAlgorithm. Enabling sha256 not psosible.");
                 }
-
-                addAlgorithmMethod.Invoke(null, new object[] { typeof(RSAPKCS1SHA256SignatureDescription), new[] { signedXml.SignatureMethod } });
+                else
+                {
+                    addAlgorithmMethod.Invoke(null, new object[] { typeof(RSAPKCS1SHA256SignatureDescription), new[] { signedXml.SignatureMethod } });
+                }
             }
 
             // verify that the inlined signature has a valid reference uri
             VerifyReferenceUri(signedXml, el.GetAttribute("ID"));
 
             return signedXml;
+        }
+
+        private static void AddAlgorithm(String key, object value)
+        {
+#if Version_4
+                var defaultNameHT =
+                typeof(CryptoConfig).GetField("defaultNameHT", BindingFlags.Static | BindingFlags.NonPublic)
+                .GetValue(null) as Dictionary;
+#endif
+
+            var defaultNameHT =
+            typeof(CryptoConfig).GetProperty("DefaultNameHT", BindingFlags.Static | BindingFlags.NonPublic)
+                .GetValue(null, null) as System.Collections.Hashtable;
+
+            if (!defaultNameHT.ContainsKey(key))
+            {
+                defaultNameHT.Add(key, value);
+            }
         }
 
         /// <summary>
@@ -448,7 +477,7 @@ namespace SAML2.DotNet35.Utils
                 {
                     throw new InvalidOperationException("Signature reference URI is not a document fragment reference. Uri = '" + uri + "'");
                 }
-                
+
                 if (uri.Length < 2 || !id.Equals(uri.Substring(1)))
                 {
                     throw new InvalidOperationException("Rererence URI = '" + uri.Substring(1) + "' does not match expected id = '" + id + "'");
@@ -468,10 +497,10 @@ namespace SAML2.DotNet35.Utils
             /// </summary>
             public RSAPKCS1SHA256SignatureDescription()
             {
-                KeyAlgorithm = "System.Security.Cryptography.RSACryptoServiceProvider";
-                DigestAlgorithm = "System.Security.Cryptography.SHA256Managed";
-                FormatterAlgorithm = "System.Security.Cryptography.RSAPKCS1SignatureFormatter";
-                DeformatterAlgorithm = "System.Security.Cryptography.RSAPKCS1SignatureDeformatter";
+                KeyAlgorithm = typeof(RSACryptoServiceProvider).FullName;
+                DigestAlgorithm = typeof(SHA256Managed).FullName;   // Note - SHA256CryptoServiceProvider is not registered with CryptoConfig
+                FormatterAlgorithm = typeof(RSAPKCS1SignatureFormatter).FullName;
+                DeformatterAlgorithm = typeof(RSAPKCS1SignatureDeformatter).FullName;
             }
 
             /// <summary>
@@ -481,13 +510,24 @@ namespace SAML2.DotNet35.Utils
             /// <returns>The newly created <see cref="T:System.Security.Cryptography.AsymmetricSignatureDeformatter" /> instance.</returns>
             public override AsymmetricSignatureDeformatter CreateDeformatter(AsymmetricAlgorithm key)
             {
-                var asymmetricSignatureDeformatter = (AsymmetricSignatureDeformatter)
-                                                     CryptoConfig.CreateFromName(DeformatterAlgorithm);
-                asymmetricSignatureDeformatter.SetKey(key);
-                asymmetricSignatureDeformatter.SetHashAlgorithm("SHA256");
+                if (key == null)
+                    throw new ArgumentNullException("RSAPKCS1SHA256SignatureDescription AsymmetricAlgorithm param: key is null");
 
-                return asymmetricSignatureDeformatter;
+                RSAPKCS1SignatureDeformatter deformatter = new RSAPKCS1SignatureDeformatter(key);
+                deformatter.SetHashAlgorithm("SHA256");
+                return deformatter;
             }
+
+            public override AsymmetricSignatureFormatter CreateFormatter(AsymmetricAlgorithm key)
+            {
+                if (key == null)
+                    throw new ArgumentNullException("RSAPKCS1SHA256SignatureDescription AsymmetricAlgorithm param: key is null");
+
+                RSAPKCS1SignatureFormatter formatter = new RSAPKCS1SignatureFormatter(key);
+                formatter.SetHashAlgorithm("SHA256");
+                return formatter;
+            }
+
         }
 
         /// <summary>

@@ -181,13 +181,14 @@ namespace SAML2.DotNet35
             {
                 result.NameIdPolicy = new NameIdPolicy
                                           {
-                                              AllowCreate = false,
-                                              Format = config.ServiceProvider.NameIdFormats[0].Format
+                                              AllowCreate = config.ServiceProvider.AuthNAllowCreate,
+                                              //Format = config.ServiceProvider.NameIdFormats[0].Format
+                                              Format = config.ServiceProvider.RequiredNameIdFormat.Format
                                           };
 
                 if (result.NameIdPolicy.Format != Saml20Constants.NameIdentifierFormats.Entity)
                 {
-                    result.NameIdPolicy.SPNameQualifier = config.ServiceProvider.Id;
+                    //result.NameIdPolicy.SPNameQualifier = config.ServiceProvider.Id;
                 }
             }
 

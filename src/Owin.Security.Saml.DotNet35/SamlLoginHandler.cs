@@ -73,16 +73,19 @@ namespace Owin
         {
             Logger.Debug(TraceMessages.SignOnHandlerCalled);
             ExceptionDispatchInfo authFailedEx = null;
-            try {
+            try
+            {
                 var messageReceivedNotification = new MessageReceivedNotification<SamlMessage, SamlAuthenticationOptions>(context, options)
                 {
                     ProtocolMessage = new SamlMessage(context, configuration, null)
                 };
                 await options.Notifications.MessageReceived(messageReceivedNotification);
-                if (messageReceivedNotification.HandledResponse) {
+                if (messageReceivedNotification.HandledResponse)
+                {
                     return null; // GetHandledResponseTicket()
                 }
-                if (messageReceivedNotification.Skipped) {
+                if (messageReceivedNotification.Skipped)
+                {
                     return null;
                 }
                 var requestParams = await HandleResponse(context);
@@ -92,10 +95,12 @@ namespace Owin
                     ProtocolMessage = new SamlMessage(context, configuration, assertion)
                 };
                 await options.Notifications.SecurityTokenReceived(securityTokenReceivedNotification);
-                if (securityTokenReceivedNotification.HandledResponse) {
+                if (securityTokenReceivedNotification.HandledResponse)
+                {
                     return null; // GetHandledResponseTicket();
                 }
-                if (securityTokenReceivedNotification.Skipped) {
+                if (securityTokenReceivedNotification.Skipped)
+                {
                     return null;
                 }
 
@@ -108,22 +113,26 @@ namespace Owin
                 };
 
                 await options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
-                if (securityTokenValidatedNotification.HandledResponse) {
+                if (securityTokenValidatedNotification.HandledResponse)
+                {
                     return null; // GetHandledResponseTicket();
                 }
-                if (securityTokenValidatedNotification.Skipped) {
+                if (securityTokenValidatedNotification.Skipped)
+                {
                     return null; // null;
                 }
                 // Flow possible changes
                 ticket = securityTokenValidatedNotification.AuthenticationTicket;
 
-                context.Authentication.AuthenticationResponseGrant = new AuthenticationResponseGrant(ticket.Identity, ticket.Properties);                
+                context.Authentication.AuthenticationResponseGrant = new AuthenticationResponseGrant(ticket.Identity, ticket.Properties);
                 return ticket;
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 authFailedEx = ExceptionDispatchInfo.Capture(ex);
             }
-            if (authFailedEx != null) {
+            if (authFailedEx != null)
+            {
                 Logger.Error("Exception occurred while processing message: " + authFailedEx.SourceException);
                 var message = new SamlMessage(context, configuration, context.Get<Saml20Assertion>("Saml2:assertion"));
                 var authenticationFailedNotification = new AuthenticationFailedNotification<SamlMessage, SamlAuthenticationOptions>(context, options)
@@ -132,10 +141,12 @@ namespace Owin
                     Exception = authFailedEx.SourceException
                 };
                 await options.Notifications.AuthenticationFailed(authenticationFailedNotification);
-                if (authenticationFailedNotification.HandledResponse) {
+                if (authenticationFailedNotification.HandledResponse)
+                {
                     return null;//GetHandledResponseTicket();
                 }
-                if (authenticationFailedNotification.Skipped) {
+                if (authenticationFailedNotification.Skipped)
+                {
                     return null; //null
                 }
 
@@ -160,22 +171,24 @@ namespace Owin
             };
 
             var relayState = requestParams["RelayState"];
-            if (relayState != null) {
+            if (relayState != null)
+            {
                 var challengeProperties = new AuthenticationProperties(Compression.DeflateDecompress(relayState).FromDelimitedString().ToDictionary(k => k.Key, v => v.Value));
                 if (challengeProperties.RedirectUri != null) authenticationProperties.RedirectUri = challengeProperties.RedirectUri;
                 foreach (var kvp in challengeProperties.Dictionary.Except(authenticationProperties.Dictionary))
                     authenticationProperties.Dictionary.Add(kvp);
             }
-			return Task.FromResult(new AuthenticationTicket(assertion.ToClaimsIdentity(options.SignInAsAuthenticationType), authenticationProperties));
+            return Task.FromResult(new AuthenticationTicket(assertion.ToClaimsIdentity(options.SignInAsAuthenticationType), authenticationProperties));
         }
 
         private Task<NameValueCollection> HandleResponse(IOwinContext context)
-        { 
+        {
             Action<Saml20Assertion> loginAction = a => DoSignOn(context, a);
 
             // Some IdP's are known to fail to set an actual value in the SOAPAction header
             // so we just check for the existence of the header field.
-            if (context.Request.Headers.ContainsKey(SoapConstants.SoapAction)) {
+            if (context.Request.Headers.ContainsKey(SoapConstants.SoapAction))
+            {
                 Utility.HandleSoap(
                     GetBuilder(context),
                     context.Request.Body,
@@ -188,20 +201,27 @@ namespace Owin
             }
 
             var requestParams = context.Request.GetRequestParameters().ToNameValueCollection();
-            if (!string.IsNullOrWhiteSpace(requestParams["SAMLart"])) {
+            if (!string.IsNullOrWhiteSpace(requestParams["SAMLart"]))
+            {
                 HandleArtifact(context);
             }
 
             var samlResponse = requestParams["SamlResponse"];
-            if (!string.IsNullOrWhiteSpace(samlResponse)) {
+            if (!string.IsNullOrWhiteSpace(samlResponse))
+            {
                 var assertion = Utility.HandleResponse(configuration, samlResponse, session, getFromCache, setInCache);
                 loginAction(assertion);
-            } else {
+            }
+            else
+            {
                 if (configuration.CommonDomainCookie.Enabled && context.Request.Query["r"] == null
-                    && requestParams["cidp"] == null) {
+                    && requestParams["cidp"] == null)
+                {
                     Logger.Debug(TraceMessages.CommonDomainCookieRedirectForDiscovery);
                     context.Response.Redirect(configuration.CommonDomainCookie.LocalReaderEndpoint);
-                } else {
+                }
+                else
+                {
                     Logger.WarnFormat(ErrorMessages.UnauthenticatedAccess, context.Request.Uri.OriginalString);
                     throw new InvalidOperationException("Response request recieved without any response data");
                 }
@@ -229,7 +249,8 @@ namespace Owin
         private static void SendResponseMessage(string message, IOwinContext context)
         {
             context.Response.ContentType = "text/xml";
-            using (var writer = new StreamWriter(context.Response.Body)) {
+            using (var writer = new StreamWriter(context.Response.Body))
+            {
                 writer.Write(HttpSoapBindingBuilder.WrapInSoapEnvelope(message));
                 writer.Flush();
                 writer.Close();

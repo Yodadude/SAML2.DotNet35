@@ -623,7 +623,7 @@ namespace SAML2.DotNet35
             // Validate the saml20Assertion.      
             if (_autoValidate)
             {
-                GetAssertionValidator(config).ValidateAssertion(Assertion);
+                GetAssertionValidator(config).ValidateAssertion(Assertion, config.AllowAnyAuthContextDeclRef);
             }
         }
     }

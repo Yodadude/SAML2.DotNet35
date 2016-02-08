@@ -19,7 +19,7 @@ namespace SAML2.DotNet35.Validation
         /// Validates the statement.
         /// </summary>
         /// <param name="statement">The statement.</param>
-        public virtual void ValidateStatement(StatementAbstract statement)
+        public virtual void ValidateStatement(StatementAbstract statement,bool allowAnyAuthContextDeclRef)
         {
             if (statement == null)
             {
@@ -29,7 +29,7 @@ namespace SAML2.DotNet35.Validation
             // Validate all possible statements in the assertion
             if (statement is AuthnStatement)
             {
-                ValidateAuthnStatement((AuthnStatement)statement);
+                ValidateAuthnStatement((AuthnStatement)statement, allowAnyAuthContextDeclRef);
             }
             else if (statement is AuthzDecisionStatement)
             {
@@ -88,7 +88,7 @@ namespace SAML2.DotNet35.Validation
         /// [SAML2.0 standard] section 2.7.2
         /// </remarks>
         /// <param name="statement">The statement.</param>
-        private void ValidateAuthnStatement(AuthnStatement statement)
+        private void ValidateAuthnStatement(AuthnStatement statement,bool allowAnyAuthContextDeclRef)
         {
             if (statement.AuthnInstant == null)
             {
@@ -113,7 +113,7 @@ namespace SAML2.DotNet35.Validation
                 }
             }
 
-            ValidateAuthnContext(statement.AuthnContext);
+            ValidateAuthnContext(statement.AuthnContext, allowAnyAuthContextDeclRef);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace SAML2.DotNet35.Validation
         /// [SAML2.0 standard] section 2.7.2.2
         /// </remarks>
         /// <param name="authnContext">The authentication context.</param>
-        private void ValidateAuthnContext(AuthnContext authnContext)
+        private void ValidateAuthnContext(AuthnContext authnContext, bool allowAnyAuthContextDeclRef)
         {
             if (authnContext == null)
             {
@@ -178,7 +178,7 @@ namespace SAML2.DotNet35.Validation
                         // There is some concern about this being a valid check.
                         // See: https://lists.oasis-open.org/archives/security-services/200703/msg00004.html
                         // http://saml2.codeplex.com/SourceControl/network/forks/etlerch/saml2/contribution/5740
-                        if (!Uri.IsWellFormedUriString((string)authnContext.Items[i], UriKind.Absolute)) {
+                        if (!allowAnyAuthContextDeclRef && !Uri.IsWellFormedUriString((string)authnContext.Items[i], UriKind.Absolute)) {
                             throw new Saml20FormatException("AuthnContextDeclRef has a value which is not a wellformed absolute uri");
                         }
 

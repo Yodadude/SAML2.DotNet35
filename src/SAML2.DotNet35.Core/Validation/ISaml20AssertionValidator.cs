@@ -12,7 +12,7 @@ namespace SAML2.DotNet35.Validation
         /// Validates the assertion.
         /// </summary>
         /// <param name="assertion">The assertion.</param>
-        void ValidateAssertion(Assertion assertion);
+        void ValidateAssertion(Assertion assertion, bool allowAnyAuthContextDeclRef);
 
         /// <summary>
         /// Validates the time restrictions.

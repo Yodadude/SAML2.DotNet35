@@ -44,17 +44,27 @@ namespace SAML2.DotNet35.Protocol
                 throw new ArgumentNullException("keys");
             }
 
-            foreach (var clause in keys.SelectMany(k => k.KeyInfo.Items.AsEnumerable().Cast<KeyInfoClause>())) {
+            foreach (var clause in keys.SelectMany(k => k.KeyInfo.Items.AsEnumerable()))
+            {
+                
+
+               
                 // Check certificate specifications
-                if (clause is KeyInfoX509Data) {
-                    var cert = XmlSignatureUtils.GetCertificateFromKeyInfo((KeyInfoX509Data)clause);
+                if (clause is SAML2.DotNet35.Schema.XmlDSig.X509Data)
+                {
+                    var clause2 = new KeyInfoX509Data((byte[])((SAML2.DotNet35.Schema.XmlDSig.X509Data)clause).Items[0]);
+                    var cert = XmlSignatureUtils.GetCertificateFromKeyInfo((KeyInfoX509Data)clause2);
                     if (!CertificateSatisfiesSpecifications(identityProvider, cert)) {
                         continue;
                     }
+                    var key = XmlSignatureUtils.ExtractKey(clause2);
+                    yield return key;
                 }
-
-                var key = XmlSignatureUtils.ExtractKey(clause);
-                yield return key;
+                else
+                {
+                    var key = XmlSignatureUtils.ExtractKey((KeyInfoClause)clause);
+                    yield return key;
+                }               
             }
         }
 

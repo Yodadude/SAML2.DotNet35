@@ -53,7 +53,7 @@ namespace SAML2.DotNet35.Validation
         /// Validates the assertion.
         /// </summary>
         /// <param name="assertion">The assertion.</param>
-        public virtual void ValidateAssertion(Assertion assertion)
+        public virtual void ValidateAssertion(Assertion assertion, bool allowAnyAuthContextDeclRef)
         {
             if (assertion == null)
             {
@@ -63,7 +63,7 @@ namespace SAML2.DotNet35.Validation
             ValidateAssertionAttributes(assertion);
             ValidateSubject(assertion);
             ValidateConditions(assertion);
-            ValidateStatements(assertion);
+            ValidateStatements(assertion, allowAnyAuthContextDeclRef);
         }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace SAML2.DotNet35.Validation
         /// NOTE: the rules relating to the enforcement of a Subject element are handled during Subject validation
         /// </summary>
         /// <param name="assertion">The assertion.</param>
-        private void ValidateStatements(Assertion assertion)
+        private void ValidateStatements(Assertion assertion,bool allowAnyAuthContextDeclRef)
         {
             // Statements are not required
             if (assertion.Items == null)
@@ -354,7 +354,7 @@ namespace SAML2.DotNet35.Validation
 
             foreach (var o in assertion.Items)
             {
-                _statementValidator.ValidateStatement(o);
+                _statementValidator.ValidateStatement(o, allowAnyAuthContextDeclRef);
             }
         }
 

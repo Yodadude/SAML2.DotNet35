@@ -41,6 +41,8 @@ namespace SAML2.DotNet35.Config
         /// <value>The name id formats.</value>
         public NameIdFormats NameIdFormats { get; set; }
 
+        public NameIdFormat RequiredNameIdFormat { get; set; }
+
         /// <summary>
         /// Gets or sets the signing certificate.
         /// </summary>
@@ -54,5 +56,7 @@ namespace SAML2.DotNet35.Config
             Endpoints = new ServiceProviderEndpoints();
             AuthenticationContexts = new AuthenticationContexts();
         }
+
+        public bool AuthNAllowCreate { get; set; }
     }
 }

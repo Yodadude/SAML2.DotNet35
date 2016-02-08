@@ -11,6 +11,6 @@ namespace SAML2.DotNet35.Validation
         /// Validates the statement.
         /// </summary>
         /// <param name="statement">The statement.</param>
-        void ValidateStatement(StatementAbstract statement);
+        void ValidateStatement(StatementAbstract statement,bool allowAnyAuthContextDeclRef);
     }
 }
