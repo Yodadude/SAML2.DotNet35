@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SAML2.DotNet35.Config;
+﻿using SAML2.DotNet35.Config;
 using SAML2.DotNet35.Logging;
+using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace SAML2.DotNet35.Utils
 {
@@ -20,6 +18,7 @@ namespace SAML2.DotNet35.Utils
             this.configuration = configuration;
             this.logger = logger;
         }
+
         /// <summary>
         /// Creates the metadata document.
         /// </summary>

@@ -32,7 +32,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.Items = null;
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -49,7 +49,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.Items = new object[0];
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -66,7 +66,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.Items = new object[] { new SamlAttribute() };
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
         }
 
@@ -110,7 +110,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -142,7 +142,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -172,7 +172,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -204,7 +204,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -236,7 +236,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -270,7 +270,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -294,7 +294,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -314,7 +314,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -333,7 +333,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -350,7 +350,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.AuthnInstant = null;
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
         }
 
@@ -374,7 +374,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.Resource = "a malformed uri";
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -391,7 +391,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.Resource = null;
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
 
             /// <summary>
@@ -407,12 +407,12 @@ namespace SAML2.DotNet35.Tests.Validation
                 statement.Resource = string.Empty;
                 var action = new Schema.Core.Action { Namespace = "http://valid/namespace" };
                 statement.Action = new[] { action };
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
 
                 statement.Resource = "urn:valid.ok:askjld";
 
                 // Act
-                validator.ValidateStatement(statement);
+                validator.ValidateStatement(statement, true);
             }
         }
     }

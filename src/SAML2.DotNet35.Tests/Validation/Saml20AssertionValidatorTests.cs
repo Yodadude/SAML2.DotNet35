@@ -32,7 +32,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion,true);
             }
 
             /// <summary>
@@ -49,7 +49,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion,true);
             }
 
             /// <summary>
@@ -66,7 +66,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion,true);
             }
 
             /// <summary>
@@ -83,7 +83,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -100,7 +100,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -114,7 +114,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
         }
 
@@ -145,7 +145,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = audienceConditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -167,7 +167,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = new List<ConditionAbstract>(new ConditionAbstract[] { audienceRestriction });
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -187,7 +187,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(allowedAudienceUris, false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -203,7 +203,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20AssertionValidator(null, false);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -225,7 +225,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = conditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -250,7 +250,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = conditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -273,7 +273,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = conditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -296,7 +296,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = conditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
             
             /// <summary>
@@ -319,7 +319,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = audienceConditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -347,7 +347,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 }
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -368,7 +368,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = conditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -392,7 +392,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.Items = conditions;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
         }
 
@@ -508,7 +508,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.NotOnOrAfter = DateTime.UtcNow.AddDays(1);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -526,7 +526,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.NotOnOrAfter = null;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -544,7 +544,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.NotOnOrAfter = null;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -561,7 +561,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.NotOnOrAfter = null;
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
 
             /// <summary>
@@ -579,7 +579,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 assertion.Conditions.NotOnOrAfter = DateTime.UtcNow.AddDays(1);
 
                 // Act
-                validator.ValidateAssertion(assertion);
+                validator.ValidateAssertion(assertion, true);
             }
         }
     }

@@ -1,12 +1,10 @@
-﻿using System;
+﻿using SAML2.DotNet35.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
-using SAML2.DotNet35.Schema.Metadata;
-using SAML2.DotNet35.Utils;
 
 namespace SAML2.DotNet35.Config
 {
@@ -26,9 +24,18 @@ namespace SAML2.DotNet35.Config
         /// </summary>
         private object _lockSync = new object();
 
-        public IdentityProviders() : base() { Initialize(); }
+        public IdentityProviders()
+            : base()
+        {
+            Initialize();
+        }
 
-        public IdentityProviders(IEnumerable<IdentityProvider> collection) : base(collection) { Initialize(); }
+        public IdentityProviders(IEnumerable<IdentityProvider> collection)
+            : base(collection)
+        {
+            Initialize();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityProviders"/> class.
         /// </summary>
@@ -37,13 +44,10 @@ namespace SAML2.DotNet35.Config
             _fileInfo = new Dictionary<string, DateTime>();
         }
 
-
-
         /// <summary>
         /// Gets or sets the encodings.
         /// </summary>
         public string Encodings { get; set; }
-
 
         /// <summary>
         /// Gets the selection URL to use for choosing identity providers if multiple are available and none are set as default.
@@ -56,8 +60,10 @@ namespace SAML2.DotNet35.Config
             // It may be more efficient to pass the stream directly, but
             // it's likely a bit safer to pull the data off the response
             // stream and create a new memorystream with the data
-            using (var ms = new MemoryStream()) {
-                using (var response = request.GetResponse().GetResponseStream()) {                    
+            using (var ms = new MemoryStream())
+            {
+                using (var response = request.GetResponse().GetResponseStream())
+                {
                     response.CopyTo35(ms);
                     response.Close();
                 }
@@ -75,18 +81,39 @@ namespace SAML2.DotNet35.Config
 
         public void AddByMetadata(params string[] files)
         {
-            foreach (var file in files) {
+            foreach (var file in files)
+            {
                 TryAddByMetadata(file); // ignore errors
             }
         }
+
+        public bool AddByMetadataXmlString(string xmlData)
+        {
+            try
+            {
+                var xmlDoc = new XmlDocument();
+                xmlDoc.PreserveWhitespace = true;
+                xmlDoc.LoadXml(xmlData);
+                var metadataDoc = new Saml20MetadataDocument(xmlDoc);
+                AdjustIdpListWithNewMetadata(metadataDoc);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public bool TryAddByMetadata(string file)
         {
-            try {
+            try
+            {
                 var metadataDoc = new Saml20MetadataDocument(file, GetEncodings());
                 AdjustIdpListWithNewMetadata(metadataDoc);
                 return true;
             }
-            catch (Exception) {
+            catch (Exception)
+            {
                 return false;
             }
         }
@@ -94,7 +121,8 @@ namespace SAML2.DotNet35.Config
         private void AdjustIdpListWithNewMetadata(Saml20MetadataDocument metadataDoc)
         {
             var endp = this.FirstOrDefault(x => x.Id == metadataDoc.EntityId);
-            if (endp == null) {
+            if (endp == null)
+            {
                 // If the endpoint does not exist, create it.
                 endp = new IdentityProvider();
                 Add(endp);
@@ -103,7 +131,6 @@ namespace SAML2.DotNet35.Config
             endp.Id = endp.Name = metadataDoc.EntityId;
             endp.Metadata = metadataDoc;
         }
-
 
         /// <summary>
         /// Returns a list of the encodings that should be tried when a metadata file does not contain a valid signature
@@ -114,7 +141,7 @@ namespace SAML2.DotNet35.Config
         internal IEnumerable<Encoding> GetEncodings()
         {
             var rc = string.IsNullOrEmpty(Encodings)
-                                  ? new [] { Encoding.UTF8, Encoding.GetEncoding("iso-8859-1") }
+                                  ? new[] { Encoding.UTF8, Encoding.GetEncoding("iso-8859-1") }
                                   : Encodings.Split(' ').Select(Encoding.GetEncoding);
 
             return rc;

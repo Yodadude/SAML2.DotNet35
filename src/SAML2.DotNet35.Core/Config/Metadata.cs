@@ -1,21 +1,17 @@
-﻿using SAML2.DotNet35.Schema.Metadata;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Collections.Generic;
 
 namespace SAML2.DotNet35.Config
 {
     /// <summary>
     /// Metadata configuration element.
     /// </summary>
-    public class Metadata 
+    public class Metadata
     {
-        
-
         /// <summary>
         /// Gets or sets a value indicating whether to exclude artifact endpoints in metadata generation.
         /// </summary>
         /// <value><c>true</c> if exclude artifact endpoints; otherwise, <c>false</c>.</value>
-        
+
         public bool ExcludeArtifactEndpoints { get; set; }
 
         /// <summary>
@@ -29,7 +25,7 @@ namespace SAML2.DotNet35.Config
         /// Gets or sets the organization.
         /// </summary>
         /// <value>The organization.</value>
-        
+
         public Organization Organization { get; set; }
 
         /// <summary>

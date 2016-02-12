@@ -280,7 +280,7 @@ namespace SAML2.DotNet35.Utils
             signedXml.KeyInfo = new KeyInfo();
             //if (AllowSelfSignCertificates)
             //{
-            signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.None));
+            signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.WholeChain));
             //}
             //else
             //{
