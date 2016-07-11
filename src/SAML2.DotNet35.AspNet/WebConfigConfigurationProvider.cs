@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 
 namespace SAML2.DotNet35.AspNet

@@ -65,5 +65,7 @@ namespace SAML2.DotNet35.Config
             AllowedAudienceUris = new List<System.Uri>();
             Metadata = new Metadata();
         }
+
+        public AlgorithmType SigningAlgorithm { get; set; }
     }
 }

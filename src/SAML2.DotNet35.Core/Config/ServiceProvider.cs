@@ -26,8 +26,7 @@ namespace SAML2.DotNet35.Config
         /// Gets or sets the authentication contexts.
         /// </summary>
         /// <value>The authentication contexts.</value>
-        public AuthenticationContexts AuthenticationContexts
-        { get; set; }
+        public AuthenticationContexts AuthenticationContexts { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoints.
@@ -41,6 +40,10 @@ namespace SAML2.DotNet35.Config
         /// <value>The name id formats.</value>
         public NameIdFormats NameIdFormats { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name id format required for the request
+        /// </summary>
+        /// <value>The required name id format for the request</value>
         public NameIdFormat RequiredNameIdFormat { get; set; }
 
         /// <summary>

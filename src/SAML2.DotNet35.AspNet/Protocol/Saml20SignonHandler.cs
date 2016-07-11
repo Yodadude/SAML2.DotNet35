@@ -203,7 +203,7 @@ namespace SAML2.DotNet35.Protocol
                 }
 
                 var requestXml = request.GetXml();
-                XmlSignatureUtils.SignDocument(requestXml, request.Id, config.ServiceProvider.SigningCertificate);
+                XmlSignatureUtils.SignDocument(requestXml, request.Id, config);
                 postBuilder.Request = requestXml.OuterXml;
 
                 Logger.DebugFormat(TraceMessages.AuthnRequestSent, postBuilder.Request);

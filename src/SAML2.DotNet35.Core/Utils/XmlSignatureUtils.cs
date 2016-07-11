@@ -1,3 +1,4 @@
+using SAML2.DotNet35.Config;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -5,7 +6,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
-using SAML2.DotNet35.Config;
 
 namespace SAML2.DotNet35.Utils
 {
@@ -253,7 +253,7 @@ namespace SAML2.DotNet35.Utils
         /// <param name="id">The id of the topmost element in the XmlDocument</param>
         public static void SignDocument(XmlDocument doc, string id, Saml2Configuration config)
         {
-            SignDocument(doc, id, config.ServiceProvider.SigningCertificate);
+            SignDocument(doc, id, config.ServiceProvider.SigningCertificate, config);
         }
 
         /// <summary>
@@ -262,11 +262,9 @@ namespace SAML2.DotNet35.Utils
         /// <param name="doc">The XmlDocument to be signed</param>
         /// <param name="id">The id of the topmost element in the XmlDocument</param>
         /// <param name="cert">The certificate used to sign the document</param>
-        public static void SignDocument(XmlDocument doc, string id, X509Certificate2 cert)
+        public static void SignDocument(XmlDocument doc, string id, X509Certificate2 cert, Saml2Configuration samlConfiguration)
         {
-            var signedXml = new SignedXml(doc);
-            signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
-            signedXml.SigningKey = cert.PrivateKey;
+            var signedXml = SetupSignedDocWithSignatureType(doc, cert, samlConfiguration);
 
             // Retrieve the value of the "ID" attribute on the root assertion element.
             var reference = new Reference("#" + id);
@@ -278,14 +276,7 @@ namespace SAML2.DotNet35.Utils
 
             // Include the public key of the certificate in the assertion.
             signedXml.KeyInfo = new KeyInfo();
-            //if (AllowSelfSignCertificates)
-            //{
             signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.WholeChain));
-            //}
-            //else
-            //{
-            //    signedXml.KeyInfo.AddClause(new KeyInfoX509Data(cert, X509IncludeOption.WholeChain));
-            //}
 
             signedXml.ComputeSignature();
 
@@ -294,7 +285,6 @@ namespace SAML2.DotNet35.Utils
             {
                 var nodes = doc.DocumentElement.GetElementsByTagName("Issuer", Saml20Constants.Assertion);
 
-                // doc.DocumentElement.InsertAfter(doc.ImportNode(signedXml.GetXml(), true), nodes[0]);
                 var parentNode = nodes[0].ParentNode;
                 if (parentNode != null)
                 {
@@ -303,7 +293,35 @@ namespace SAML2.DotNet35.Utils
             }
         }
 
-        #endregion
+        private static SignedXml SetupSignedDocWithSignatureType(XmlDocument doc, X509Certificate2 cert, Saml2Configuration samlConfiguration)
+        {
+            var signedXml = new SignedXml(doc);
+            signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
+            if (samlConfiguration.SigningAlgorithm == AlgorithmType.SHA256)
+            {
+                var exportedKeyMaterial = cert.PrivateKey.ToXmlString( /* includePrivateParameters = */ true);
+
+                var cspParameters = new CspParameters(24 /* PROV_RSA_AES */);
+                var key = new RSACryptoServiceProvider(cspParameters);
+                key.PersistKeyInCsp = false;
+                key.FromXmlString(exportedKeyMaterial);
+
+                signedXml.SignedInfo.SignatureMethod = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+                signedXml.SigningKey = key;
+            }
+            else if (samlConfiguration.SigningAlgorithm == AlgorithmType.SHA1)
+            {
+                signedXml.SigningKey = cert.PrivateKey;
+            }
+            else
+            {
+                throw new NotImplementedException(string.Format("Signing with algoritm {0} is not implemented", AlgorithmType.SHA512.ToString()));
+            }
+
+            return signedXml;
+        }
+
+        #endregion Public methods
 
         #region Private methods
 
@@ -527,7 +545,6 @@ namespace SAML2.DotNet35.Utils
                 formatter.SetHashAlgorithm("SHA256");
                 return formatter;
             }
-
         }
 
         /// <summary>

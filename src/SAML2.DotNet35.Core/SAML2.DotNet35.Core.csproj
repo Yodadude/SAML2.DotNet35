@@ -60,6 +60,7 @@
     <Compile Include="Bindings\HttpSOAPBindingBuilder.cs" />
     <Compile Include="Bindings\HttpSOAPBindingParser.cs" />
     <Compile Include="Bindings\SOAPConstants.cs" />
+    <Compile Include="Config\AlgorithmType.cs" />
     <Compile Include="Config\Attribute.cs" />
     <Compile Include="Config\AuthenticationContexts.cs" />
     <Compile Include="Config\AuthenticationContextComparison.cs" />

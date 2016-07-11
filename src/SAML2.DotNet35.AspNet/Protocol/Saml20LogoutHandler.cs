@@ -210,7 +210,7 @@ namespace SAML2.DotNet35.Protocol
 
                 // response.Destination = destination.Url;
                 var doc = response.GetXml();
-                XmlSignatureUtils.SignDocument(doc, response.Id, config.ServiceProvider.SigningCertificate);
+                XmlSignatureUtils.SignDocument(doc, response.Id, config);
                 if (doc.FirstChild is XmlDeclaration)
                 {
                     doc.RemoveChild(doc.FirstChild);
@@ -344,7 +344,7 @@ namespace SAML2.DotNet35.Protocol
 
                 Logger.DebugFormat(TraceMessages.LogoutResponseSent, responseDocument.OuterXml);
 
-                XmlSignatureUtils.SignDocument(responseDocument, response.Id, config.ServiceProvider.SigningCertificate);
+                XmlSignatureUtils.SignDocument(responseDocument, response.Id, config);
                 builder.Response = responseDocument.OuterXml;
                 builder.RelayState = context.Request.Params["RelayState"];
                 context.Response.Write(builder.GetPage());
@@ -391,7 +391,7 @@ namespace SAML2.DotNet35.Protocol
                 request.SessionIndex = (string)context.Session[IdpSessionIdKey];
 
                 var requestDocument = request.GetXml();
-                XmlSignatureUtils.SignDocument(requestDocument, request.Id, config.ServiceProvider.SigningCertificate);
+                XmlSignatureUtils.SignDocument(requestDocument, request.Id, config);
                 builder.Request = requestDocument.OuterXml;
 
                 Logger.DebugFormat(TraceMessages.LogoutRequestSent, idp.Id, "POST", builder.Request);
