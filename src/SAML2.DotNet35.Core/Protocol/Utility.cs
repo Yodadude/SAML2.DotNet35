@@ -440,12 +440,7 @@ namespace SAML2.DotNet35.Protocol
             }
 
             // Check if an encoding-override exists for the IdP endpoint in question
-            var issuer = Utility.GetIssuer(assertion);
-            var endpoint = IdpSelectionUtil.RetrieveIDPConfiguration(issuer, config);
-            if (!endpoint.AllowReplayAttacks)
-            {
-                Utility.CheckReplayAttack(doc.DocumentElement, !endpoint.AllowIdPInitiatedSso, session);
-            }
+
             var status = Utility.GetStatusElement(doc.DocumentElement);
             if (status.StatusCode.Value != Saml20Constants.StatusCodes.Success)
             {
@@ -455,9 +450,23 @@ namespace SAML2.DotNet35.Protocol
                     throw new Saml20Exception(ErrorMessages.ResponseStatusIsNoPassive);
                 }
 
-                logger.ErrorFormat(ErrorMessages.ResponseStatusNotSuccessful, status);
-                throw new Saml20Exception(string.Format(ErrorMessages.ResponseStatusNotSuccessful, status));
+                var error = string.Format("{0} {1}", status.StatusCode.Value ?? "", status.StatusCode.SubStatusCode.Value ?? "");
+                logger.ErrorFormat(ErrorMessages.ResponseStatusNotSuccessful, error);
+                throw new Saml20Exception(string.Format(ErrorMessages.ResponseStatusNotSuccessful, error));
             }
+
+            if (assertion == null)
+            {
+                logger.Error(ErrorMessages.AssertionNotFound);
+                throw new Saml20Exception(string.Format(ErrorMessages.AssertionNotFound, status));
+            }
+
+            var issuer = Utility.GetIssuer(assertion);
+            var endpoint = IdpSelectionUtil.RetrieveIDPConfiguration(issuer, config);
+            if (!endpoint.AllowReplayAttacks)
+            {
+                Utility.CheckReplayAttack(doc.DocumentElement, !endpoint.AllowIdPInitiatedSso, session);
+            }            
 
             if (!string.IsNullOrEmpty(endpoint.ResponseEncoding))
             {
