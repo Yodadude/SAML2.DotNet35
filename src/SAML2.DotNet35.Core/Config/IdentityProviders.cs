@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Xml;
 
@@ -56,21 +57,32 @@ namespace SAML2.DotNet35.Config
 
         public void AddByMetadataUrl(Uri url)
         {
-            var request = System.Net.WebRequest.Create(url);
-            // It may be more efficient to pass the stream directly, but
-            // it's likely a bit safer to pull the data off the response
-            // stream and create a new memorystream with the data
-            using (var ms = new MemoryStream())
+            try
             {
-                using (var response = request.GetResponse().GetResponseStream())
+                var request = System.Net.WebRequest.Create(url);
+                // It may be more efficient to pass the stream directly, but
+                // it's likely a bit safer to pull the data off the response
+                // stream and create a new memorystream with the data
+                using (var ms = new MemoryStream())
                 {
-                    response.CopyTo35(ms);
-                    response.Close();
+                    using (var response = request.GetResponse().GetResponseStream())
+                    {
+                        response.CopyTo35(ms);
+                        response.Close();
+                    }
+                    ms.Seek(0, SeekOrigin.Begin); // Rewind memorystream back to the beginning
+                    // We want to allow exceptions to bubble up in this case
+                    var metadataDoc = new Saml20MetadataDocument(ms, GetEncodings());
+                    AdjustIdpListWithNewMetadata(metadataDoc);
                 }
-                ms.Seek(0, SeekOrigin.Begin); // Rewind memorystream back to the beginning
-                // We want to allow exceptions to bubble up in this case
-                var metadataDoc = new Saml20MetadataDocument(ms, GetEncodings());
-                AdjustIdpListWithNewMetadata(metadataDoc);
+            }
+            catch (WebException webEx)
+            {
+                throw new Saml20Exception(string.Format(@"Could not get Identity Provider Metadata from Url, WebException Occured, HttpStatusCode: {0}, ErrorMessage: {1}, WebResponse :{2}", webEx.Status ,webEx.Message ?? "", webEx.Response),webEx);
+            }
+            catch (Exception ex)
+            {
+                throw new Saml20Exception(string.Format(@"Could not get Identity Provider Metadata from Url, Exception occured, ErrorMessage: {1}", ex.Message), ex);
             }
         }
 
