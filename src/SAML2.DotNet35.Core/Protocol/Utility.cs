@@ -178,6 +178,22 @@ namespace SAML2.DotNet35.Protocol
             var doc = new XmlDocument { PreserveWhitespace = true };
             samlResponse = encoding.GetString(Convert.FromBase64String(samlResponse));
             doc.LoadXml(samlResponse);
+			
+			//TODO: Make the validate whole doc sig as well as assertion
+            foreach (XmlNode n in doc.ChildNodes)
+            {
+                if (n.Name == "Response" || n.Name == "saml2p:Response")
+                {
+                    foreach (XmlNode x in n.ChildNodes)
+                    {
+                        if (x.Name == "Signature" || x.Name == "ds:Signature")
+                        {
+                            logger.WarnFormat("Two Signatures found in response, removing extra signature",samlResponse);
+                            n.RemoveChild(x);
+                        }
+                    }
+                }
+            }
 
             logger.DebugFormat(TraceMessages.SamlResponseDecoded, samlResponse);
 

@@ -612,8 +612,8 @@ namespace SAML2.DotNet35
             var serviceProviderDescriptor = new SpSsoDescriptor
                                    {
                                        ProtocolSupportEnumeration = new[] { Saml20Constants.Protocol },
-                                       AuthnRequestsSigned = XmlConvert.ToString(true),
-                                       WantAssertionsSigned = XmlConvert.ToString(true)
+                                       AuthnRequestsSigned = XmlConvert.ToString(Sign),
+                                       WantAssertionsSigned = XmlConvert.ToString(Sign)
                                    };
 
             if (config.ServiceProvider.NameIdFormats.Count > 0)
