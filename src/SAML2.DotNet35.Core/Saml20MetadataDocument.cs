@@ -805,6 +805,9 @@ namespace SAML2.DotNet35
                                 case "urn:mace:shibboleth:1.0:profiles:AuthnRequest":
                                     // This is a SAML 1.1 binding, it is silly, we shall ignore it
                                     continue;
+                                case "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign":
+                                    // This is a another binding we will ignore for the moment
+                                    continue;
                                 default:
                                     throw new InvalidOperationException("Binding not supported: " + endpoint.Binding);
                             }

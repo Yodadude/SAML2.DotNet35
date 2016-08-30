@@ -299,6 +299,8 @@ namespace SAML2.DotNet35.Utils
             signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
             if (samlConfiguration.SigningAlgorithm == AlgorithmType.SHA256)
             {
+                SetupSHA256();
+
                 var exportedKeyMaterial = cert.PrivateKey.ToXmlString( /* includePrivateParameters = */ true);
 
                 var cspParameters = new CspParameters(24 /* PROV_RSA_AES */);
@@ -431,23 +433,27 @@ namespace SAML2.DotNet35.Utils
             // an exception will be raised if an SHA256 signature method is attempted to be used.
             if (signedXml.SignatureMethod.Contains("rsa-sha256"))
             {
-                var addAlgorithmMethod = typeof(CryptoConfig).GetMethod("AddAlgorithm", BindingFlags.Public | BindingFlags.Static);
-                if (addAlgorithmMethod == null)
-                {
-                    var ob1 = CryptoConfig.CreateFromName("SHA256");
-                    AddAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", typeof(RSAPKCS1SHA256SignatureDescription));
-                    //throw new InvalidOperationException("This version of .Net does not support CryptoConfig.AddAlgorithm. Enabling sha256 not psosible.");
-                }
-                else
-                {
-                    addAlgorithmMethod.Invoke(null, new object[] { typeof(RSAPKCS1SHA256SignatureDescription), new[] { signedXml.SignatureMethod } });
-                }
+                SetupSHA256();
             }
 
             // verify that the inlined signature has a valid reference uri
             VerifyReferenceUri(signedXml, el.GetAttribute("ID"));
 
             return signedXml;
+        }
+
+        public static void SetupSHA256()
+        {
+            var addAlgorithmMethod = typeof(CryptoConfig).GetMethod("AddAlgorithm", BindingFlags.Public | BindingFlags.Static);
+            if (addAlgorithmMethod == null)
+            {
+                var ob1 = CryptoConfig.CreateFromName("SHA256");
+                AddAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", typeof(RSAPKCS1SHA256SignatureDescription));               
+            }
+            else
+            {
+                addAlgorithmMethod.Invoke(null, new object[] { typeof(RSAPKCS1SHA256SignatureDescription), new[] { "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" } });
+            }
         }
 
         private static void AddAlgorithm(String key, object value)
