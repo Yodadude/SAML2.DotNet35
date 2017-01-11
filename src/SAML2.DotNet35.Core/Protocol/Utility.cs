@@ -318,7 +318,12 @@ namespace SAML2.DotNet35.Protocol
             // Check signatures
             if (!endp.OmitAssertionSignatureCheck)
             {
-                var trusted = GetTrustedSigners(endp.Metadata.GetKeys(KeyTypes.Signing), endp);
+                var keys = endp.Metadata.GetKeys(KeyTypes.Signing);
+                if(keys == null || !keys.Any())
+                {
+                    keys = endp.Metadata.GetKeys(KeyTypes.Encryption);
+                }
+                var trusted = GetTrustedSigners(keys, endp);
                 if (!assertion.CheckSignature(trusted))
                 {
                     logger.Error(ErrorMessages.AssertionSignatureInvalid);

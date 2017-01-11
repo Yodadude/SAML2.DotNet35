@@ -6,7 +6,7 @@ namespace SAML2.DotNet35.Config
     /// <summary>
     /// ServiceProvider configuration element.
     /// </summary>
-    public class ServiceProvider 
+    public class ServiceProvider
     {
 
         /// <summary>
@@ -20,7 +20,6 @@ namespace SAML2.DotNet35.Config
         /// </summary>
         /// <value>The server.</value>
         public string Server { get; set; }
-
 
         /// <summary>
         /// Gets or sets the authentication contexts.
@@ -61,5 +60,13 @@ namespace SAML2.DotNet35.Config
         }
 
         public bool AuthNAllowCreate { get; set; }
+
+        public bool UseValidUntil { get; set; }
+
+        public bool AuthNRequestsSigned { get; set; }
+
+        public bool WantAssertionsSigned { get; set; }
+
+        public bool IncludeArtifactResolutionEndpoints { get; set; }
     }
 }

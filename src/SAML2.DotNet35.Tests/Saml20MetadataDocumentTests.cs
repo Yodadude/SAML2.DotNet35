@@ -160,6 +160,18 @@ namespace SAML2.DotNet35.Tests
                 Assert.AreEqual(2, metadata.SSOEndpoints.Count);
             }
 
+            [Test]
+            public void TestMetadataloadWithNoUseTypeSigning()
+            {
+                var doc = new XmlDocument { PreserveWhitespace = true };
+                doc.Load(@"Protocol\MetadataDocs\rmit-metadata.xml");
+
+                // Act
+                var metadata = new Saml20MetadataDocument(doc);
+                var l  = XmlSignatureUtils.CheckSignature(doc);
+                var a = "";
+            }
+
         }
     }
 }

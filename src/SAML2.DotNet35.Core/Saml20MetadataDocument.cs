@@ -607,13 +607,16 @@ namespace SAML2.DotNet35
         {
             var entity = CreateDefaultEntity();
             entity.EntityID = config.ServiceProvider.Id;
-            entity.ValidUntil = DateTime.Now.AddDays(7);
+            if (config.ServiceProvider.UseValidUntil)
+            {
+                entity.ValidUntil = DateTime.Now.AddDays(7);
+            }
 
             var serviceProviderDescriptor = new SpSsoDescriptor
                                    {
                                        ProtocolSupportEnumeration = new[] { Saml20Constants.Protocol },
-                                       AuthnRequestsSigned = XmlConvert.ToString(Sign),
-                                       WantAssertionsSigned = XmlConvert.ToString(Sign)
+                                       AuthnRequestsSigned = XmlConvert.ToString(config.ServiceProvider.AuthNRequestsSigned),
+                                       WantAssertionsSigned = XmlConvert.ToString(config.ServiceProvider.WantAssertionsSigned)
                                    };
 
             if (config.ServiceProvider.NameIdFormats.Count > 0)
@@ -646,13 +649,16 @@ namespace SAML2.DotNet35
                                             };
                     signonServiceEndpoints.Add(loginEndpoint);
 
-                    var artifactSignonEndpoint = new IndexedEndpoint
-                                                     {
-                                                         Binding = Saml20Constants.ProtocolBindings.HttpSoap,
-                                                         Index = loginEndpoint.Index,
-                                                         Location = loginEndpoint.Location
-                                                     };
-                    artifactResolutionEndpoints.Add(artifactSignonEndpoint);
+                    if (config.ServiceProvider.IncludeArtifactResolutionEndpoints)
+                    {
+                        var artifactSignonEndpoint = new IndexedEndpoint
+                                                         {
+                                                             Binding = Saml20Constants.ProtocolBindings.HttpSoap,
+                                                             Index = loginEndpoint.Index,
+                                                             Location = loginEndpoint.Location
+                                                         };
+                        artifactResolutionEndpoints.Add(artifactSignonEndpoint);
+                    }
 
                     continue;
                 }
@@ -666,15 +672,16 @@ namespace SAML2.DotNet35
                     logoutEndpoint.ResponseLocation = logoutEndpoint.Location;
                     logoutEndpoint.Binding = GetBinding(endpoint.Binding, Saml20Constants.ProtocolBindings.HttpPost);
                     logoutServiceEndpoints.Add(logoutEndpoint);
-
-                    var artifactLogoutEndpoint = new IndexedEndpoint
-                                                     {
-                                                         Binding = Saml20Constants.ProtocolBindings.HttpSoap,
-                                                         Index = endpoint.Index,
-                                                         Location = logoutEndpoint.Location
-                                                     };
-                    artifactResolutionEndpoints.Add(artifactLogoutEndpoint);
-
+                    if (config.ServiceProvider.IncludeArtifactResolutionEndpoints)
+                    {
+                        var artifactLogoutEndpoint = new IndexedEndpoint
+                                                         {
+                                                             Binding = Saml20Constants.ProtocolBindings.HttpSoap,
+                                                             Index = endpoint.Index,
+                                                             Location = logoutEndpoint.Location
+                                                         };
+                        artifactResolutionEndpoints.Add(artifactLogoutEndpoint);
+                    }
                     continue;
                 }
             }
