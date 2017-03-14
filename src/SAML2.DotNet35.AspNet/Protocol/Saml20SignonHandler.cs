@@ -31,7 +31,8 @@ namespace SAML2.DotNet35.Protocol
         /// <summary>
         /// Initializes a new instance of the <see cref="Saml20SignonHandler"/> class.
         /// </summary>
-        public Saml20SignonHandler() : this(null)
+        public Saml20SignonHandler()
+            : this(null)
         { }
 
         public Saml20SignonHandler(Saml2Configuration config)
@@ -39,10 +40,12 @@ namespace SAML2.DotNet35.Protocol
             _certificate = config.ServiceProvider.SigningCertificate;
 
             // Read the proper redirect url from config
-            try {
+            try
+            {
                 RedirectUrl = config.ServiceProvider.Endpoints.DefaultSignOnEndpoint.RedirectUrl;
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Logger.Error(e.Message, e);
             }
         }
@@ -51,6 +54,7 @@ namespace SAML2.DotNet35.Protocol
         {
             Handle(context, ConfigurationFactory.Instance.Configuration);
         }
+
         /// <summary>
         /// Handles a request.
         /// </summary>
@@ -65,7 +69,8 @@ namespace SAML2.DotNet35.Protocol
 
             // Some IdP's are known to fail to set an actual value in the SOAPAction header
             // so we just check for the existence of the header field.
-            if (Array.Exists(context.Request.Headers.AllKeys, s => s == SoapConstants.SoapAction)) {
+            if (Array.Exists(context.Request.Headers.AllKeys, s => s == SoapConstants.SoapAction))
+            {
                 Utility.HandleSoap(
                     GetBuilder(context),
                     context.Request.InputStream,
@@ -77,7 +82,8 @@ namespace SAML2.DotNet35.Protocol
                 return;
             }
 
-            if (!string.IsNullOrEmpty(context.Request.Params["SAMLart"])) {
+            if (!string.IsNullOrEmpty(context.Request.Params["SAMLart"]))
+            {
                 HandleArtifact(context, config, (c, s, conf) =>
                     Utility.HandleSoap(
                         GetBuilder(context),
@@ -88,17 +94,23 @@ namespace SAML2.DotNet35.Protocol
                         setInCache,
                         session));
             }
-            
+
             var samlResponse = context.Request.Params["SamlResponse"];
-            if (!string.IsNullOrEmpty(samlResponse)) {
+            if (!string.IsNullOrEmpty(samlResponse))
+            {
                 var assertion = Utility.HandleResponse(config, samlResponse, session, getFromCache, setInCache);
                 loginAction(assertion);
-            } else {
+            }
+            else
+            {
                 if (config.CommonDomainCookie.Enabled && context.Request.QueryString["r"] == null
-                    && context.Request.Params["cidp"] == null) {
+                    && context.Request.Params["cidp"] == null)
+                {
                     Logger.Debug(TraceMessages.CommonDomainCookieRedirectForDiscovery);
                     context.Response.Redirect(config.CommonDomainCookie.LocalReaderEndpoint);
-                } else {
+                }
+                else
+                {
                     Logger.WarnFormat(ErrorMessages.UnauthenticatedAccess, context.Request.RawUrl);
                     SendRequest(context, config);
                 }
@@ -146,7 +158,8 @@ namespace SAML2.DotNet35.Protocol
         {
             // See if the "ReturnUrl" - parameter is set.
             var returnUrl = context.Request.QueryString["ReturnUrl"];
-            if (!string.IsNullOrEmpty(returnUrl) && context.Session != null) {
+            if (!string.IsNullOrEmpty(returnUrl) && context.Session != null)
+            {
                 context.Session["RedirectUrl"] = returnUrl;
             }
 
@@ -154,7 +167,8 @@ namespace SAML2.DotNet35.Protocol
             var selectionUtil = new IdpSelectionUtil(Logger);
             var idp = selectionUtil.RetrieveIDP(context.Request.Params, context.Request.QueryString, config, s => { context.Response.Redirect(s); isRedirected = true; });
             if (isRedirected) return;
-            if (idp == null) {
+            if (idp == null)
+            {
                 // Display a page to the user where she can pick the IDP
                 Logger.DebugFormat(TraceMessages.IdentityProviderRedirect);
 
@@ -177,63 +191,70 @@ namespace SAML2.DotNet35.Protocol
         {
             IdentityProviderEndpoint destination = ConfigureRequest(identityProvider, request, context);
 
-            switch (destination.Binding) {
-            case BindingType.Redirect:
-                Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpRedirect);
+            switch (destination.Binding)
+            {
+                case BindingType.Redirect:
+                    Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpRedirect);
 
-                var redirectBuilder = new HttpRedirectBindingBuilder
-                {
-                    SigningKey = _certificate.PrivateKey,
-                    Request = request.GetXml().OuterXml
-                };
+                    var redirectBuilder = new HttpRedirectBindingBuilder(config)
+                    {
+                        SigningKey = _certificate.PrivateKey,
+                        Request = request.GetXml().OuterXml
+                    };
 
-                Logger.DebugFormat(TraceMessages.AuthnRequestSent, redirectBuilder.Request);
+                    Logger.DebugFormat(TraceMessages.AuthnRequestSent, redirectBuilder.Request);
 
-                var redirectLocation = request.Destination + "?" + redirectBuilder.ToQuery();
-                context.Response.Redirect(redirectLocation, true);
-                break;
-            case BindingType.Post:
-                Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpPost);
+                    var redirectLocation = request.Destination + "?" + redirectBuilder.ToQuery();
+                    context.Response.Redirect(redirectLocation, true);
+                    break;
 
-                var postBuilder = new HttpPostBindingBuilder(destination);
+                case BindingType.Post:
+                    Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpPost);
 
-                // Honor the ForceProtocolBinding and only set this if it's not already set
-                if (string.IsNullOrEmpty(request.ProtocolBinding)) {
-                    request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpPost;
-                }
+                    var postBuilder = new HttpPostBindingBuilder(destination);
 
-                var requestXml = request.GetXml();
-                XmlSignatureUtils.SignDocument(requestXml, request.Id, config);
-                postBuilder.Request = requestXml.OuterXml;
+                    // Honor the ForceProtocolBinding and only set this if it's not already set
+                    if (string.IsNullOrEmpty(request.ProtocolBinding))
+                    {
+                        request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpPost;
+                    }
 
-                Logger.DebugFormat(TraceMessages.AuthnRequestSent, postBuilder.Request);
+                    var requestXml = request.GetXml();
+                    XmlSignatureUtils.SignDocument(requestXml, request.Id, config);
+                    postBuilder.Request = requestXml.OuterXml;
 
-                context.Response.Write(postBuilder.GetPage());
-                break;
-            case BindingType.Artifact:
-                Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpArtifact);
+                    Logger.DebugFormat(TraceMessages.AuthnRequestSent, postBuilder.Request);
 
-                var artifactBuilder = GetBuilder(context);
+                    context.Response.Write(postBuilder.GetPage());
+                    break;
 
-                // Honor the ForceProtocolBinding and only set this if it's not already set
-                if (string.IsNullOrEmpty(request.ProtocolBinding)) {
-                    request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpArtifact;
-                }
+                case BindingType.Artifact:
+                    Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpArtifact);
 
-                Logger.DebugFormat(TraceMessages.AuthnRequestSent, request.GetXml().OuterXml);
+                    var artifactBuilder = GetBuilder(context);
 
-                artifactBuilder.RedirectFromLogin(destination, request, context.Request.Params["relayState"], (s, o) => context.Cache.Insert(s, o, null, DateTime.Now.AddMinutes(1), Cache.NoSlidingExpiration));
-                break;
-            default:
-                Logger.Error(ErrorMessages.EndpointBindingInvalid);
-                throw new Saml20Exception(ErrorMessages.EndpointBindingInvalid);
+                    // Honor the ForceProtocolBinding and only set this if it's not already set
+                    if (string.IsNullOrEmpty(request.ProtocolBinding))
+                    {
+                        request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpArtifact;
+                    }
+
+                    Logger.DebugFormat(TraceMessages.AuthnRequestSent, request.GetXml().OuterXml);
+
+                    artifactBuilder.RedirectFromLogin(destination, request, context.Request.Params["relayState"], (s, o) => context.Cache.Insert(s, o, null, DateTime.Now.AddMinutes(1), Cache.NoSlidingExpiration));
+                    break;
+
+                default:
+                    Logger.Error(ErrorMessages.EndpointBindingInvalid);
+                    throw new Saml20Exception(ErrorMessages.EndpointBindingInvalid);
             }
         }
 
         private static IdentityProviderEndpoint ConfigureRequest(IdentityProvider identityProvider, Saml20AuthnRequest request, HttpContext context)
         {
             // Set the last IDP we attempted to login at.
-            if (context.Session != null) {
+            if (context.Session != null)
+            {
                 context.Session[IdpTempSessionKey] = identityProvider.Id;
             }
             context.Items[IdpTempSessionKey] = identityProvider.Id;
@@ -242,31 +263,37 @@ namespace SAML2.DotNet35.Protocol
             var destination = IdpSelectionUtil.DetermineEndpointConfiguration(BindingType.Redirect, identityProvider.Endpoints.DefaultSignOnEndpoint, identityProvider.Metadata.SSOEndpoints);
             request.Destination = destination.Url;
 
-            if (identityProvider.ForceAuth) {
+            if (identityProvider.ForceAuth)
+            {
                 request.ForceAuthn = true;
             }
 
             // Check isPassive status
             var isPassiveFlag = context.Session != null ? context.Session[IdpIsPassive] : null;
-            if (isPassiveFlag != null && (bool)isPassiveFlag) {
+            if (isPassiveFlag != null && (bool)isPassiveFlag)
+            {
                 request.IsPassive = true;
                 context.Session[IdpIsPassive] = null;
             }
 
-            if (identityProvider.IsPassive) {
+            if (identityProvider.IsPassive)
+            {
                 request.IsPassive = true;
             }
 
             // Check if request should forceAuthn
             var forceAuthnFlag = context.Session != null ? context.Session[IdpForceAuthn] : null;
-            if (forceAuthnFlag != null && (bool)forceAuthnFlag) {
+            if (forceAuthnFlag != null && (bool)forceAuthnFlag)
+            {
                 request.ForceAuthn = true;
                 context.Session[IdpForceAuthn] = null;
             }
 
             // Check if protocol binding should be forced
-            if (identityProvider.Endpoints.DefaultSignOnEndpoint != null) {
-                if (!string.IsNullOrEmpty(identityProvider.Endpoints.DefaultSignOnEndpoint.ForceProtocolBinding)) {
+            if (identityProvider.Endpoints.DefaultSignOnEndpoint != null)
+            {
+                if (!string.IsNullOrEmpty(identityProvider.Endpoints.DefaultSignOnEndpoint.ForceProtocolBinding))
+                {
                     request.ProtocolBinding = identityProvider.Endpoints.DefaultSignOnEndpoint.ForceProtocolBinding;
                 }
             }

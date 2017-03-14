@@ -1,3 +1,4 @@
+using SAML2.DotNet35.Config;
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
@@ -12,6 +13,16 @@ namespace SAML2.DotNet35.Bindings
     /// </summary>
     public class HttpRedirectBindingBuilder
     {
+        public HttpRedirectBindingBuilder(Saml2Configuration config)
+        {
+            _config = config;
+        }
+
+        /// <summary>
+        /// Request backing field.
+        /// </summary>
+        private Saml2Configuration _config;
+
         /// <summary>
         /// Request backing field.
         /// </summary>
@@ -181,7 +192,19 @@ namespace SAML2.DotNet35.Bindings
             if (_signingKey is RSACryptoServiceProvider)
             {
                 var rsa = (RSACryptoServiceProvider)_signingKey;
-                return rsa.SignData(data, new SHA1CryptoServiceProvider());
+
+                if (_config.SigningAlgorithm == AlgorithmType.SHA1)
+                {
+                    return rsa.SignData(data, new SHA1CryptoServiceProvider());
+                }
+                else if(_config.SigningAlgorithm == AlgorithmType.SHA256)
+                {
+                    return rsa.SignData(data, new SHA256CryptoServiceProvider());
+                }
+                else
+                {
+                    return rsa.SignData(data, new SHA1CryptoServiceProvider());
+                }                
             } 
             else
             {

@@ -37,6 +37,7 @@ namespace SAML2.DotNet35.Protocol
         }
 
         #region IHttpHandler related
+
         /// <summary>
         /// Handles a request.
         /// </summary>
@@ -45,6 +46,7 @@ namespace SAML2.DotNet35.Protocol
         {
             Handle(context, null);
         }
+
         /// <summary>
         /// Handles a request.
         /// </summary>
@@ -99,7 +101,7 @@ namespace SAML2.DotNet35.Protocol
             }
         }
 
-        #endregion
+        #endregion IHttpHandler related
 
         #region Private methods - Handlers
 
@@ -122,7 +124,6 @@ namespace SAML2.DotNet35.Protocol
             //}
         }
 
-
         /// <summary>
         /// Handles the SOAP message.
         /// </summary>
@@ -135,7 +136,7 @@ namespace SAML2.DotNet35.Protocol
 
             var builder = GetBuilder(context);
             var idp = IdpSelectionUtil.RetrieveIDPConfiguration(parser.Issuer, config);
-            
+
             if (parser.IsArtifactResolve)
             {
                 Logger.DebugFormat(TraceMessages.ArtifactResolveReceived, parser.SamlMessage);
@@ -199,7 +200,7 @@ namespace SAML2.DotNet35.Protocol
                 Logger.DebugFormat(TraceMessages.LogoutRequestReceived, parser.SamlMessage.OuterXml);
 
                 var req = parser.LogoutRequest;
-                
+
                 // Build the response object
                 var response = new Saml20LogoutResponse
                                    {
@@ -215,7 +216,7 @@ namespace SAML2.DotNet35.Protocol
                 {
                     doc.RemoveChild(doc.FirstChild);
                 }
-                
+
                 SendResponseMessage(doc.OuterXml, context);
             }
             else
@@ -319,7 +320,7 @@ namespace SAML2.DotNet35.Protocol
             // Respond using redirect binding
             if (destination.Binding == BindingType.Redirect)
             {
-                var builder = new HttpRedirectBindingBuilder
+                var builder = new HttpRedirectBindingBuilder(config)
                                   {
                                       RelayState = context.Request.Params["RelayState"],
                                       Response = response.GetXml().OuterXml,
@@ -350,7 +351,7 @@ namespace SAML2.DotNet35.Protocol
                 context.Response.Write(builder.GetPage());
             }
         }
-        
+
         /// <summary>
         /// Handles the response.
         /// </summary>
@@ -409,7 +410,7 @@ namespace SAML2.DotNet35.Protocol
                 request.SubjectToLogOut.Value = (string)context.Session[IdpNameId];
                 request.SessionIndex = (string)context.Session[IdpSessionIdKey];
 
-                var builder = new HttpRedirectBindingBuilder
+                var builder = new HttpRedirectBindingBuilder(config)
                                   {
                                       Request = request.GetXml().OuterXml,
                                       SigningKey = config.ServiceProvider.SigningCertificate.PrivateKey
@@ -440,6 +441,6 @@ namespace SAML2.DotNet35.Protocol
             throw new Saml20Exception(ErrorMessages.EndpointBindingInvalid);
         }
 
-        #endregion
+        #endregion Private methods - Handlers
     }
 }

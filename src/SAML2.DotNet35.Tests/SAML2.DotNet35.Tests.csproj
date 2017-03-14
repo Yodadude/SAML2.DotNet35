@@ -136,7 +136,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assertions\Assertions.txt" />
-    <Content Include="Protocol\MetadataDocs\assert.xml" />
     <Content Include="Protocol\MetadataDocs\FOBS\tfobs-demo-idp-metadata.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -147,9 +146,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Protocol\MetadataDocs\metadata-HAIKU.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Protocol\MetadataDocs\rmit-metadata.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
