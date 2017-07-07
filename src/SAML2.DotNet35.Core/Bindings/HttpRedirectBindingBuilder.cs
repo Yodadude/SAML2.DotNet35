@@ -8,8 +8,8 @@ using CONSTS = SAML2.DotNet35.Bindings.HttpRedirectBindingConstants;
 namespace SAML2.DotNet35.Bindings
 {
     /// <summary>
-    /// Handles the creation of redirect locations when using the HTTP redirect binding, which is outlined in [SAMLBind] 
-    /// section 3.4. 
+    /// Handles the creation of redirect locations when using the HTTP redirect binding, which is outlined in [SAMLBind]
+    /// section 3.4.
     /// </summary>
     public class HttpRedirectBindingBuilder
     {
@@ -150,7 +150,7 @@ namespace SAML2.DotNet35.Bindings
             result.Append("&RelayState=");
 
             // Encode the relay state if we're building a request. Otherwise, append unmodified.
-            result.Append(_request != null ? Uri.EscapeDataString(Utils.Compression.DeflateEncode(RelayState)) : RelayState);
+            result.Append(_request != null ? Uri.EscapeDataString(Utils.Compression.Deflate(RelayState)) : RelayState);
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace SAML2.DotNet35.Bindings
             {
                 return;
             }
-            
+
             result.Append(string.Format("&{0}=", HttpRedirectBindingConstants.SigAlg));
 
             if (_signingKey is RSA)
@@ -176,8 +176,8 @@ namespace SAML2.DotNet35.Bindings
             }
 
             // Calculate the signature of the URL as described in [SAMLBind] section 3.4.4.1.
-            var signature = SignData(Encoding.UTF8.GetBytes(result.ToString()));            
-            
+            var signature = SignData(Encoding.UTF8.GetBytes(result.ToString()));
+
             result.AppendFormat("&{0}=", HttpRedirectBindingConstants.Signature);
             result.Append(Uri.EscapeDataString(Convert.ToBase64String(signature)));
         }
@@ -204,8 +204,8 @@ namespace SAML2.DotNet35.Bindings
                 else
                 {
                     return rsa.SignData(data, new SHA1CryptoServiceProvider());
-                }                
-            } 
+                }
+            }
             else
             {
                 var dsa = (DSACryptoServiceProvider)_signingKey;
@@ -224,7 +224,7 @@ namespace SAML2.DotNet35.Bindings
                 throw new Exception("Request or Response property MUST be set.");
             }
 
-            string value; 
+            string value;
             if (_request != null)
             {
                 result.AppendFormat("{0}=", CONSTS.SamlRequest);
@@ -236,7 +236,7 @@ namespace SAML2.DotNet35.Bindings
                 value = _response;
             }
 
-            var encoded = Utils.Compression.DeflateEncode(value);
+            var encoded = Utils.Compression.Deflate(value);
             result.Append(UpperCaseUrlEncode(Uri.EscapeDataString(encoded)));
         }
     }

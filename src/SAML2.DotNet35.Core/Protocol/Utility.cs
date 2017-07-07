@@ -169,15 +169,23 @@ namespace SAML2.DotNet35.Protocol
         /// Gets the decoded SAML response.
         /// </summary>
         /// <param name="samlResponse">This is base64 encoded SAML Response (usually SAMLResponse on query string)</param>
-        /// <param name="encoding">The encoding.</param>
+        /// <returns>The decoded SAML response XML.</returns>
+        public static XmlDocument GetDecodedSamlResponse(string samlResponse)
+           => GetDecodedSamlResponse(samlResponse, Encoding.UTF8);
+
+        /// <summary>
+        /// Gets the decoded SAML response.
+        /// </summary>
+        /// <param name="samlResponse">This is base64 encoded SAML Response (usually SAMLResponse on query string)</param>
+        /// <param name="encoding">The encoding.(Deprecated)</param>
         /// <returns>The decoded SAML response XML.</returns>
         public static XmlDocument GetDecodedSamlResponse(string samlResponse, Encoding encoding)
         {
             logger.Debug(TraceMessages.SamlResponseDecoding);
 
             var doc = new XmlDocument { PreserveWhitespace = true };
-            samlResponse = encoding.GetString(Convert.FromBase64String(samlResponse));
-            doc.LoadXml(samlResponse);
+            var decodedSamlResponse = Compression.Inflate(samlResponse, encoding);
+            doc.LoadXml(decodedSamlResponse);
 
             //TODO: Make the validate whole doc sig as well as assertion
             foreach (XmlNode n in doc.ChildNodes)
@@ -186,16 +194,16 @@ namespace SAML2.DotNet35.Protocol
                 {
                     foreach (XmlNode x in n.ChildNodes)
                     {
-                        if (x.LocalName == "Signature" || n.LocalName.ToUpperInvariant() == "Signature")
+                        if (x.LocalName == "Signature" || n.LocalName.ToUpperInvariant() == "SIGNATURE")
                         {
-                            logger.WarnFormat("Two Signatures found in response, removing extra signature", samlResponse);
+                            logger.WarnFormat("Two Signatures found in response, removing extra signature", decodedSamlResponse);
                             n.RemoveChild(x);
                         }
                     }
                 }
             }
 
-            logger.DebugFormat(TraceMessages.SamlResponseDecoded, samlResponse);
+            logger.DebugFormat(TraceMessages.SamlResponseDecoded, decodedSamlResponse);
 
             return doc;
         }
