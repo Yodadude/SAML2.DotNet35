@@ -60,5 +60,9 @@ namespace SAML2.DotNet35.Utils
                 return Convert.ToBase64String(memoryStream.GetBuffer(), 0, (int)memoryStream.Length, Base64FormattingOptions.None);
             }
         }
+
+        [Obsolete("This has been signature has been change to Deflate")]
+        public static string DeflateEncode(string val)
+            => Deflate(val);
     }
 }

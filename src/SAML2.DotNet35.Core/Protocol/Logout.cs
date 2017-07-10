@@ -18,7 +18,7 @@ namespace SAML2.DotNet35.Protocol
         public Logout(IInternalLogger logger, SAML2.DotNet35.Config.Saml2Configuration config)
         {
             if (logger == null) throw new ArgumentNullException("logger");
-            if (config == null) throw new ArgumentNullException("config"); 
+            if (config == null) throw new ArgumentNullException("config");
             this.logger = logger;
             this.config = config;
         }
@@ -71,7 +71,7 @@ namespace SAML2.DotNet35.Protocol
             }
 
             // signature on final message in logout
-            if (!parser.CheckSignature(idp.Metadata.Keys)) {
+            if (!parser.VerifySignature(idp.Metadata.Keys)) {
                 logger.Error(ErrorMessages.ResponseSignatureInvalid);
                 throw new Saml20Exception(ErrorMessages.ResponseSignatureInvalid);
             }

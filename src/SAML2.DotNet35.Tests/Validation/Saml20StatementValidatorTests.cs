@@ -204,7 +204,7 @@ namespace SAML2.DotNet35.Tests.Validation
                 var validator = new Saml20StatementValidator();
 
                 // Act
-                validator.ValidateStatement(statement, true);
+                validator.ValidateStatement(statement, false);
             }
 
             /// <summary>

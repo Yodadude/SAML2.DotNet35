@@ -294,7 +294,7 @@ namespace SAML2.DotNet35.Protocol
                 var metadata = endpoint.Metadata;
 
                 // Check signature
-                if (!parser.CheckSignature(metadata.GetKeys(KeyTypes.Signing)))
+                if (!parser.VerifySignature(metadata.GetKeys(KeyTypes.Signing)))
                 {
                     Logger.Error(ErrorMessages.RequestSignatureInvalid);
                     throw new Saml20Exception(ErrorMessages.RequestSignatureInvalid);

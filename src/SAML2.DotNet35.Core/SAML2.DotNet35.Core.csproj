@@ -59,6 +59,7 @@
     <Compile Include="Bindings\HttpRedirectBindingParser.cs" />
     <Compile Include="Bindings\HttpSOAPBindingBuilder.cs" />
     <Compile Include="Bindings\HttpSOAPBindingParser.cs" />
+    <Compile Include="Bindings\IHttpBindingParser.cs" />
     <Compile Include="Bindings\SOAPConstants.cs" />
     <Compile Include="Config\AlgorithmType.cs" />
     <Compile Include="Config\Attribute.cs" />

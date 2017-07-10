@@ -12,7 +12,7 @@ namespace SAML2.DotNet35.Bindings
     /// <summary>
     /// Parses and validates the query parameters of a HttpRedirectBinding. [SAMLBind] section 3.4.
     /// </summary>
-    public class HttpRedirectBindingParser
+    public class HttpRedirectBindingParser : IHttpBindingParser
     {
         /// <summary>
         /// <c>RelaystateDecoded</c> backing field.
@@ -124,11 +124,13 @@ namespace SAML2.DotNet35.Bindings
                 throw new InvalidOperationException("Query is not signed, so there is no signature to verify.");
             }
 
-            var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(_signedquery));
+            var hashAlgorithm = GetHashAlgorithmFromAlgorithmUrl(SignatureAlgorithm);
+            var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(_signedquery));
+
             if (key is RSACryptoServiceProvider)
             {
                 var rsa = (RSACryptoServiceProvider)key;
-                return rsa.VerifyHash(hash, "SHA1", DecodeSignature());
+                return VerifyHash(hashAlgorithm, rsa, hash, DecodeSignature());
             }
             else
             {
@@ -254,6 +256,42 @@ namespace SAML2.DotNet35.Bindings
                     Signature = value;
                     return;
             }
+        }
+
+        private HashAlgorithm GetHashAlgorithmFromAlgorithmUrl(string algUrl)
+        {
+            switch (algUrl)
+            {
+                case Saml20Constants.XmlDsigRSASHA256Url:
+                    return new SHA256Managed();
+
+                case Saml20Constants.XmlDsigRSASHA512Url:
+                    return new SHA512Managed();
+
+                case Saml20Constants.XmlDsigRSASHA1Url:
+                default:
+                    return new SHA1Managed();
+            }
+        }
+
+        private bool VerifyHash(HashAlgorithm hashAlg, RSACryptoServiceProvider rsa, byte[] hash, byte[] v)
+        {
+            var hashAlgStr = "SHA1";
+
+            if (hashAlg is SHA1Managed)
+            {
+                hashAlgStr = "SHA1";
+            }
+            else if (hashAlg is SHA256Managed)
+            {
+                hashAlgStr = "SHA256";
+            }
+            else if (hashAlg is SHA512Managed)
+            {
+                hashAlgStr = "SHA512";
+            }
+
+            return rsa.VerifyHash(hash, hashAlgStr, v);
         }
     }
 }

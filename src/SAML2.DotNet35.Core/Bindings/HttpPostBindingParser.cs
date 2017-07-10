@@ -6,13 +6,14 @@ using System.Xml;
 using SAML2.DotNet35.Schema.Metadata;
 using SAML2.DotNet35.Utils;
 using System.Collections.Specialized;
+using SAML2.DotNet35.Protocol;
 
 namespace SAML2.DotNet35.Bindings
 {
     /// <summary>
     /// Parses the response messages related to the HTTP POST binding.
     /// </summary>
-    public class HttpPostBindingParser
+    public class HttpPostBindingParser : IHttpBindingParser
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpPostBindingParser"/> class.
@@ -62,7 +63,7 @@ namespace SAML2.DotNet35.Bindings
         {
             get { return XmlSignatureUtils.IsSigned(Document); }
         }
-        
+
         /// <summary>
         /// Gets the message.
         /// </summary>
@@ -72,7 +73,7 @@ namespace SAML2.DotNet35.Bindings
         /// Checks the signature.
         /// </summary>
         /// <returns>True of the signature is valid, else false.</returns>
-        public bool CheckSignature()
+        public bool VerifySignature()
         {
             return XmlSignatureUtils.CheckSignature(Document);
         }
@@ -82,7 +83,7 @@ namespace SAML2.DotNet35.Bindings
         /// </summary>
         /// <param name="keys">The set of keys to check the signature against</param>
         /// <returns>True of the signature is valid, else false.</returns>
-        public bool CheckSignature(IEnumerable<KeyDescriptor> keys)
+        public bool VerifySignature(IEnumerable<KeyDescriptor> keys)
         {
             foreach (var keyDescriptor in keys)
             {

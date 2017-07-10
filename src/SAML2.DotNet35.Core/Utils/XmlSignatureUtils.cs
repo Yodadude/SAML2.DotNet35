@@ -272,6 +272,15 @@ namespace SAML2.DotNet35.Utils
             reference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
             reference.AddTransform(new XmlDsigExcC14NTransform());
 
+            if (samlConfiguration.SigningAlgorithm == AlgorithmType.SHA256)
+            {
+                reference.DigestMethod = Saml20Constants.XmlDsigSHA256Url;
+            }
+            else if (samlConfiguration.SigningAlgorithm == AlgorithmType.SHA512)
+            {
+                reference.DigestMethod = Saml20Constants.XmlDsigSHA512Url;
+            }
+
             signedXml.AddReference(reference);
 
             // Include the public key of the certificate in the assertion.
@@ -448,7 +457,7 @@ namespace SAML2.DotNet35.Utils
             if (addAlgorithmMethod == null)
             {
                 var ob1 = CryptoConfig.CreateFromName("SHA256");
-                AddAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", typeof(RSAPKCS1SHA256SignatureDescription));               
+                AddAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", typeof(RSAPKCS1SHA256SignatureDescription));
             }
             else
             {

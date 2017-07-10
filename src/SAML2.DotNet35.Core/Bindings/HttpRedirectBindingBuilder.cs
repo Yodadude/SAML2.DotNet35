@@ -168,7 +168,13 @@ namespace SAML2.DotNet35.Bindings
 
             if (_signingKey is RSA)
             {
-                result.Append(UpperCaseUrlEncode(Uri.EscapeDataString(SignedXml.XmlDsigRSASHA1Url)));
+                var uri = SignedXml.XmlDsigRSASHA1Url;
+                if (_config.SigningAlgorithm == AlgorithmType.SHA256)
+                {
+                    uri = Saml20Constants.XmlDsigRSASHA256Url;
+                }
+
+                result.Append(UpperCaseUrlEncode(Uri.EscapeDataString(uri)));
             }
             else
             {
@@ -191,19 +197,29 @@ namespace SAML2.DotNet35.Bindings
         {
             if (_signingKey is RSACryptoServiceProvider)
             {
+                Utils.XmlSignatureUtils.SetupSHA256();
                 var rsa = (RSACryptoServiceProvider)_signingKey;
 
                 if (_config.SigningAlgorithm == AlgorithmType.SHA1)
                 {
-                    return rsa.SignData(data, new SHA1CryptoServiceProvider());
+                    return rsa.SignData(data, new SHA1Managed());
                 }
-                else if(_config.SigningAlgorithm == AlgorithmType.SHA256)
+                else if (_config.SigningAlgorithm == AlgorithmType.SHA256)
                 {
-                    return rsa.SignData(data, new SHA256CryptoServiceProvider());
+                    var exportedKeyMaterial = _signingKey.ToXmlString( /* includePrivateParameters = */ true);
+
+                    var cspParameters = new CspParameters(24 /* PROV_RSA_AES */);
+                    var key = new RSACryptoServiceProvider(cspParameters);
+                    key.PersistKeyInCsp = false;
+                    key.FromXmlString(exportedKeyMaterial);
+
+                    rsa = (RSACryptoServiceProvider)key;
+
+                    return rsa.SignData(data, new SHA256Managed());
                 }
                 else
                 {
-                    return rsa.SignData(data, new SHA1CryptoServiceProvider());
+                    return rsa.SignData(data, new SHA1Managed());
                 }
             }
             else

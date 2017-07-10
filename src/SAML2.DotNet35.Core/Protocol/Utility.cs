@@ -165,6 +165,15 @@ namespace SAML2.DotNet35.Protocol
             }
         }
 
+
+        public static XmlDocument LoadAssertion(string decodedSamlResponse)
+        {
+            var doc = new XmlDocument { PreserveWhitespace = true };
+            doc.LoadXml(decodedSamlResponse);
+
+            return doc;
+        }
+
         /// <summary>
         /// Gets the decoded SAML response.
         /// </summary>
@@ -183,9 +192,8 @@ namespace SAML2.DotNet35.Protocol
         {
             logger.Debug(TraceMessages.SamlResponseDecoding);
 
-            var doc = new XmlDocument { PreserveWhitespace = true };
-            var decodedSamlResponse = Compression.Inflate(samlResponse, encoding);
-            doc.LoadXml(decodedSamlResponse);
+            var decodedSamlResponse = encoding.GetString(Convert.FromBase64String(samlResponse));
+            var doc = LoadAssertion(decodedSamlResponse);
 
             //TODO: Make the validate whole doc sig as well as assertion
             foreach (XmlNode n in doc.ChildNodes)
@@ -305,7 +313,7 @@ namespace SAML2.DotNet35.Protocol
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="elem">The elem.</param>
-        public static Saml20Assertion HandleAssertion(XmlElement elem, Saml2Configuration config, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache)
+        public static Saml20Assertion HandleAssertion(XmlElement elem, Saml2Configuration config, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache, bool validateSig)
         {
             logger.DebugFormat(TraceMessages.AssertionProcessing, elem.OuterXml);
 
@@ -324,7 +332,7 @@ namespace SAML2.DotNet35.Protocol
             var assertion = new Saml20Assertion(elem, null, quirksMode, config);
 
             // Check signatures
-            if (!endp.OmitAssertionSignatureCheck)
+            if (validateSig && !endp.OmitAssertionSignatureCheck)
             {
                 var keys = endp.Metadata.GetKeys(KeyTypes.Signing);
                 if (keys == null || !keys.Any())
@@ -362,14 +370,17 @@ namespace SAML2.DotNet35.Protocol
             return assertion;
         }
 
+        public static Saml20Assertion HandleEncryptedAssertion(XmlElement elem, Saml2Configuration config, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache)
+            => HandleEncryptedAssertion(elem, config, getFromCache, setInCache, true);
+
         /// <summary>
         /// Decrypts an encrypted assertion, and sends the result to the HandleAssertion method.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="elem">The elem.</param>
-        public static Saml20Assertion HandleEncryptedAssertion(XmlElement elem, Saml2Configuration config, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache)
+        public static Saml20Assertion HandleEncryptedAssertion(XmlElement elem, Saml2Configuration config, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache, bool validateSig)
         {
-            return HandleAssertion(GetDecryptedAssertion(elem, config).Assertion.DocumentElement, config, getFromCache, setInCache);
+            return HandleAssertion(GetDecryptedAssertion(elem, config).Assertion.DocumentElement, config, getFromCache, setInCache, validateSig);
         }
 
         /// <summary>
@@ -434,7 +445,7 @@ namespace SAML2.DotNet35.Protocol
 
                     var samlAssertion = isEncrypted
                         ? Utility.HandleEncryptedAssertion(assertion, config, getFromCache, setInCache)
-                        : Utility.HandleAssertion(assertion, config, getFromCache, setInCache);
+                        : Utility.HandleAssertion(assertion, config, getFromCache, setInCache, true);
                     signonCallback(samlAssertion);
                 }
                 else
@@ -450,14 +461,24 @@ namespace SAML2.DotNet35.Protocol
             }
         }
 
+        public static Saml20Assertion HandleResponse(Saml2Configuration config, string samlResponse, IDictionary<string, object> session, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache)
+            => HandleResponse(config, samlResponse, session, getFromCache, setInCache, true);
+
         /// <summary>
         /// Handle the authentication response from the IDP.
         /// </summary>
         /// <param name="context">The context.</param>
-        public static Saml20Assertion HandleResponse(Saml2Configuration config, string samlResponse, IDictionary<string, object> session, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache)
+        public static Saml20Assertion HandleResponse(Saml2Configuration config, string samlResponse, IDictionary<string, object> session, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache, bool validateSig)
         {
             var defaultEncoding = Encoding.UTF8;
             var doc = Utility.GetDecodedSamlResponse(samlResponse, defaultEncoding);
+
+            return HandleDecodedResponse(config, doc, session, getFromCache, setInCache, validateSig);
+        }
+
+        public static Saml20Assertion HandleDecodedResponse(Saml2Configuration config, XmlDocument doc,  IDictionary<string, object> session, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache, bool validateSig)
+        {
+            var defaultEncoding = Encoding.UTF8;
             logger.DebugFormat(TraceMessages.SamlResponseReceived, doc.OuterXml);
 
             // Determine whether the assertion should be decrypted before being validated.
@@ -497,27 +518,27 @@ namespace SAML2.DotNet35.Protocol
                 Utility.CheckReplayAttack(doc.DocumentElement, !endpoint.AllowIdPInitiatedSso, session);
             }
 
-            if (!string.IsNullOrEmpty(endpoint.ResponseEncoding))
-            {
-                Encoding encodingOverride;
-                try
-                {
-                    encodingOverride = Encoding.GetEncoding(endpoint.ResponseEncoding);
-                }
-                catch (ArgumentException ex)
-                {
-                    logger.ErrorFormat(ErrorMessages.UnknownEncoding, endpoint.ResponseEncoding);
-                    throw new ArgumentException(string.Format(ErrorMessages.UnknownEncoding, endpoint.ResponseEncoding), ex);
-                }
+            // if (!string.IsNullOrEmpty(endpoint.ResponseEncoding))
+            // {
+            //     Encoding encodingOverride;
+            //     try
+            //     {
+            //         encodingOverride = Encoding.GetEncoding(endpoint.ResponseEncoding);
+            //     }
+            //     catch (ArgumentException ex)
+            //     {
+            //         logger.ErrorFormat(ErrorMessages.UnknownEncoding, endpoint.ResponseEncoding);
+            //         throw new ArgumentException(string.Format(ErrorMessages.UnknownEncoding, endpoint.ResponseEncoding), ex);
+            //     }
 
-                if (encodingOverride.CodePage != defaultEncoding.CodePage)
-                {
-                    var doc1 = GetDecodedSamlResponse(samlResponse, encodingOverride);
-                    assertion = GetAssertion(doc1.DocumentElement, out isEncrypted);
-                }
-            }
+            //     // if (encodingOverride.CodePage != defaultEncoding.CodePage)
+            //     // {
+            //     //     var doc1 = GetDecodedSamlResponse(samlResponse, encodingOverride);
+            //     //     assertion = GetAssertion(doc1.DocumentElement, out isEncrypted);
+            //     // }
+            // }
 
-            return HandleAssertion(assertion, config, getFromCache, setInCache);
+            return HandleAssertion(assertion, config, getFromCache, setInCache, validateSig);
         }
     }
 }
